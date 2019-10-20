@@ -6,16 +6,12 @@ use GenSys\Unit\Resources\Dummy\Object\DummyObject;
 
 class DummyServiceWithDependency
 {
-    /** @var DummyObject */
-    private $dummyObject;
-
-    public function __construct(DummyObject $dummyObject)
+    public function __construct()
     {
-        $this->dummyObject = $dummyObject;
     }
 
-    public function addToDummyValue(int $addTo)
+    public function addToDummyValue(DummyObject $dummyObject, int $addTo)
     {
-        return $this->dummyObject->getDummyValue() + $addTo;
+        return $dummyObject->getDummyValue() + $addTo;
     }
 }

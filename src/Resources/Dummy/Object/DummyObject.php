@@ -5,7 +5,7 @@ namespace GenSys\Unit\Resources\Dummy\Object;
 class DummyObject
 {
     /** @var int */
-    private $dummyValue = 5;
+    private $dummyValue;
 
     public function __construct(int $dummyValue)
     {
