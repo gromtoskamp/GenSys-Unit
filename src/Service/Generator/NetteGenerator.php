@@ -2,6 +2,7 @@
 
 namespace GenSys\Unit\Service\Generator;
 
+use ReflectionMethod;
 use function str_replace;
 
 use GenSys\Unit\Factory\MockDependencyFactory;
@@ -44,9 +45,24 @@ class NetteGenerator implements GeneratorStrategy
         $classType = $phpNamespace->addClass($testClassName);
         $classType->addExtend('PHPUnit\Framework\TestCase');
 
-        $this->addSetupMethod($classType, $originalClass);
+        $reflectionClass = new ReflectionClass($originalClass);
+
+        $this->addSetupMethod($classType, $reflectionClass);
+        $this->addTestMethods($classType, $reflectionClass);
 
         $this->write($phpNamespace);
+    }
+
+    private function addTestMethods(ClassType $classType, ReflectionClass $reflectionClass)
+    {
+        foreach($reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $reflectionMethod) {
+            if (strpos($reflectionMethod->getName(), '__') !== false) {
+                continue;
+            }
+
+            $testName = 'test' . ucfirst($reflectionMethod->getName());
+            $testMethod = $classType->addMethod($testName);
+        }
     }
 
     /**
@@ -69,28 +85,27 @@ class NetteGenerator implements GeneratorStrategy
 
     /**
      * @param ClassType $classType
-     * @param string $fullyQualifiedClassName
+     * @param ReflectionClass $reflectionClass
      * @throws ReflectionException
      */
-    private function addSetupMethod(ClassType $classType, string $fullyQualifiedClassName)
+    private function addSetupMethod(ClassType $classType, ReflectionClass $reflectionClass)
     {
         $setUpMethod = $classType->addMethod(self::METHOD_SETUP);
-        $mockDependencies = $this->getMockDependencies($fullyQualifiedClassName);
+        $mockDependencies = $this->getMockDependencies($reflectionClass);
         foreach ($mockDependencies as $mockDependency) {
             $dependencyProperty = $classType->addProperty($mockDependency->getPropertyName());
-            $dependencyProperty->addComment('@var ' . $mockDependency->getFullyQualifiedClassName());
+            $dependencyProperty->addComment('@var ' . $mockDependency->getFullyQualifiedClassName() . '|MockObject');
             $setUpMethod->addBody($mockDependency->getBody());
         }
     }
 
     /**
-     * @param string $fullyQualifiedClassName
+     * @param ReflectionClass $reflectionClass
      * @return MockDependency[]
      * @throws ReflectionException
      */
-    private function getMockDependencies(string $fullyQualifiedClassName)
+    private function getMockDependencies(ReflectionClass $reflectionClass)
     {
-        $reflectionClass = new ReflectionClass($fullyQualifiedClassName);
         $mockDependencies = [];
         foreach ($reflectionClass->getConstructor()->getParameters() as $parameter) {
             $mockDependencies[] = $this->mockDependencyFactory->createFromReflectionParameter($parameter);

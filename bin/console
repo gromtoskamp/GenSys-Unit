@@ -10,6 +10,5 @@ use Symfony\Component\Console\Application;
 $application = new Application();
 
 $application->add(new GenerateUnitTestCommand());
-// ... register commands
 
 $application->run();
