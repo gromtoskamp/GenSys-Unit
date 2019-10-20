@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+// application.php
+
+require __DIR__. '/../vendor/autoload.php';
+
+use GenSys\Unit\Command\GenerateUnitTestCommand;
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+
+$application->add(new GenerateUnitTestCommand());
+// ... register commands
+
+$application->run();

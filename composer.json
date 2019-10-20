@@ -1,0 +1,35 @@
+{
+  "name": "gensys/unit",
+  "type": "application",
+  "description": "A tool to automatically generate PHP Unit tests",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Tom Groskamp",
+      "email": "Tom.Groskamp@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.2",
+    "symfony/console": "^3.4",
+    "nette/php-generator": "^3.2",
+    "symfony/dependency-injection": "^3.4",
+    "symfony/filesystem": "^3.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.7.27 || ^6.5.14 || ^7.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "GenSys\\Unit\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "GenSys\\Unit\\Tests\\": "tests/"
+    }
+  },
+  "bin": [
+    "gensys"
+  ]
+}
