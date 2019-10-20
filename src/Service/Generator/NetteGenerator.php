@@ -25,6 +25,7 @@ class NetteGenerator implements GeneratorStrategy
 
         $phpNamespace = new PhpNamespace($namespace);
         $classType = $phpNamespace->addClass($testClassName);
+        $classType->addExtend('PHPUnit\Framework\TestCase');
 
         $this->addSetUpToClassType($classType, $originalClass);
 

@@ -2,7 +2,7 @@
 
 namespace GenSys\Unit\Resources\Dummy\Service;
 
-class DummyServiceWithDependencyTest
+class DummyServiceWithDependencyTest extends \PHPUnit\Framework\TestCase
 {
 	public function setUp()
 	{
