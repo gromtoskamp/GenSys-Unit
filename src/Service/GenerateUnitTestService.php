@@ -21,9 +21,6 @@ class GenerateUnitTestService
      */
     public function generateUnitTest(string $className)
     {
-        $testClassName = $className . 'Test';
-
-        var_dump($this->generatorStrategy->createTest($testClassName));
-        exit;
+        $this->generatorStrategy->createTest($className);
     }
 }

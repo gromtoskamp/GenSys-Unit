@@ -2,9 +2,10 @@
 
 namespace GenSys\Unit\Resources\Dummy\Service;
 
-class Rest
+class DummyServiceWithDependencyTest
 {
 	public function setUp()
 	{
+		$this->getMockBuilder('GenSys\Unit\Resources\Dummy\Object\DummyObject')->disableOriginalConstructor()->getMock();
 	}
 }
