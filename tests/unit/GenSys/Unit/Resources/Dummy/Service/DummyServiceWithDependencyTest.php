@@ -2,10 +2,16 @@
 
 namespace GenSys\Unit\Resources\Dummy\Service;
 
-class DummyServiceWithDependencyTest extends \PHPUnit\Framework\TestCase
+use PHPUnit\Framework\TestCase;
+
+class DummyServiceWithDependencyTest extends TestCase
 {
+	/** @var \GenSys\Unit\Resources\Dummy\Object\DummyObject */
+	public $dummyObject;
+
+
 	public function setUp()
 	{
-		$this->getMockBuilder('GenSys\Unit\Resources\Dummy\Object\DummyObject')->disableOriginalConstructor()->getMock();
+		$this->dummyObject = $this->getMockBuilder('GenSys\Unit\Resources\Dummy\Object\DummyObject')->disableOriginalConstructor()->getMock();
 	}
 }

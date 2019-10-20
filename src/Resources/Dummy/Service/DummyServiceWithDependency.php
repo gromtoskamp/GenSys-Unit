@@ -13,4 +13,9 @@ class DummyServiceWithDependency
     {
         $this->dummyObject = $dummyObject;
     }
+
+    public function addToDummyValue(int $addTo)
+    {
+        return $this->dummyObject->getDummyValue() + $addTo;
+    }
 }
