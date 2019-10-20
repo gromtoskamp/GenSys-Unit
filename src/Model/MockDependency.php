@@ -19,10 +19,20 @@ class MockDependency
     {
         return $this->parameter->getClass()->getShortName();
     }
+
+    public function getVariableName()
+    {
+        return '$' . $this->getPropertyName();
+    }
     
     public function getPropertyName()
     {
         return lcfirst($this->getClassName());
+    }
+
+    public function getPropertyCall()
+    {
+        return '$this->' . $this->getPropertyName();
     }
 
     public function getFullyQualifiedClassName()

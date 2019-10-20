@@ -2,6 +2,8 @@
 
 namespace GenSys\Unit\Service\Generator;
 
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use function str_replace;
 
@@ -22,6 +24,9 @@ class NetteGenerator implements GeneratorStrategy
     /** @var MockDependencyFactory */
     private $mockDependencyFactory;
 
+    /** @var MockDependency[] */
+    private $mockDependencies = [];
+
     /**
      * NetteGenerator constructor.
      */
@@ -41,14 +46,17 @@ class NetteGenerator implements GeneratorStrategy
         $namespace = implode('\\', $namespaceArray);
 
         $phpNamespace = new PhpNamespace($namespace);
-        $phpNamespace->addUse(self::EXTEND_TESTCASE);
+        $phpNamespace->addUse(TestCase::class);
+        $phpNamespace->addUse(MockObject::class);
         $classType = $phpNamespace->addClass($testClassName);
-        $classType->addExtend('PHPUnit\Framework\TestCase');
+        $classType->addExtend(TestCase::class);
 
         $reflectionClass = new ReflectionClass($originalClass);
 
         $this->addSetupMethod($classType, $reflectionClass);
         $this->addTestMethods($classType, $reflectionClass);
+
+        $this->addMockDependenciesBody($classType, $phpNamespace);
 
         $this->write($phpNamespace);
     }
@@ -60,8 +68,32 @@ class NetteGenerator implements GeneratorStrategy
                 continue;
             }
 
-            $testName = 'test' . ucfirst($reflectionMethod->getName());
-            $testMethod = $classType->addMethod($testName);
+            $this->addTestMethod($classType, $reflectionMethod);
+        }
+    }
+
+    public function addTestMethod(ClassType $classType, ReflectionMethod $reflectionMethod)
+    {
+        $testName = 'test' . ucfirst($reflectionMethod->getName());
+        $testMethod =$classType->addMethod($testName);
+
+        foreach ($reflectionMethod->getParameters() as $parameter) {
+            $parameterClass = $parameter->getClass();
+            if (null !== $parameterClass) {
+                $mockDependency = $this->mockDependencyFactory->createFromReflectionParameter($parameter);
+                $this->mockDependencies[$parameterClass->getName()] = $mockDependency;
+                $testMethod->addBody($mockDependency->getVariableName() . ' = clone ' . $mockDependency->getPropertyCall() . ';');
+            }
+        }
+    }
+
+    private function addMockDependenciesBody(ClassType $classType, PhpNamespace $phpNamespace)
+    {
+        foreach ($this->mockDependencies as $mockDependency) {
+            $dependencyProperty = $classType->addProperty($mockDependency->getPropertyName());
+            $dependencyProperty->addComment('@var ' . $mockDependency->getClassName() . '|MockObject');
+            $classType->getMethod(self::METHOD_SETUP)->addBody($mockDependency->getBody());
+            $phpNamespace->addUse($mockDependency->getFullyQualifiedClassName());
         }
     }
 
@@ -91,12 +123,7 @@ class NetteGenerator implements GeneratorStrategy
     private function addSetupMethod(ClassType $classType, ReflectionClass $reflectionClass)
     {
         $setUpMethod = $classType->addMethod(self::METHOD_SETUP);
-        $mockDependencies = $this->getMockDependencies($reflectionClass);
-        foreach ($mockDependencies as $mockDependency) {
-            $dependencyProperty = $classType->addProperty($mockDependency->getPropertyName());
-            $dependencyProperty->addComment('@var ' . $mockDependency->getFullyQualifiedClassName() . '|MockObject');
-            $setUpMethod->addBody($mockDependency->getBody());
-        }
+        $this->addMockDependenciesFromClass($reflectionClass);
     }
 
     /**
@@ -104,13 +131,10 @@ class NetteGenerator implements GeneratorStrategy
      * @return MockDependency[]
      * @throws ReflectionException
      */
-    private function getMockDependencies(ReflectionClass $reflectionClass)
+    private function addMockDependenciesFromClass(ReflectionClass $reflectionClass)
     {
-        $mockDependencies = [];
         foreach ($reflectionClass->getConstructor()->getParameters() as $parameter) {
-            $mockDependencies[] = $this->mockDependencyFactory->createFromReflectionParameter($parameter);
+            $this->mockDependencies[] = $this->mockDependencyFactory->createFromReflectionParameter($parameter);
         }
-
-        return $mockDependencies;
     }
 }
