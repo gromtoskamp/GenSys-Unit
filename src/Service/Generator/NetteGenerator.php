@@ -69,15 +69,6 @@ class NetteGenerator implements GeneratorStrategy
         }
     }
 
-    private function addMockDependenciesBody(ClassType $classType, PhpNamespace $phpNamespace)
-    {
-        foreach ($this->mockDependencies as $mockDependency) {
-            $dependencyProperty = $classType->addProperty($mockDependency->getPropertyName());
-            $classType->getMethod(self::METHOD_SETUP)->addBody($mockDependency->getBody());
-            $phpNamespace->addUse($mockDependency->getFullyQualifiedClassName());
-        }
-    }
-
     /**
      * @param PhpNamespace $phpNamespace
      */
@@ -94,26 +85,5 @@ class NetteGenerator implements GeneratorStrategy
         foreach ($phpNamespace->getClasses() as $classType) {
             file_put_contents($testFolder . $classType->getName() . '.php', "<?php\n\n" . (string) $phpNamespace);
         }
-    }
-
-    /**
-     * @param ClassType $classType
-     * @param ReflectionClass $reflectionClass
-     * @throws ReflectionException
-     */
-    private function addSetupMethod(ClassType $classType, ReflectionClass $reflectionClass)
-    {
-        $classType->addMethod(self::METHOD_SETUP);
-        $this->addMockDependenciesFromClass($reflectionClass);
-    }
-
-    /**
-     * @param ReflectionClass $reflectionClass
-     * @return MockDependency[]
-     * @throws ReflectionException
-     */
-    private function addMockDependenciesFromClass(ReflectionClass $reflectionClass)
-    {
-
     }
 }
