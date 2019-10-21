@@ -44,4 +44,9 @@ class MockDependency
     {
         return '$this->' . $this->getPropertyName() . ' = $this->getMockBuilder(\'' . $this->parameter->getClass()->getName() . '\')->disableOriginalConstructor()->getMock();';
     }
+
+    public function getDocBlock()
+    {
+        return '@var ' . $this->getClassName() . '|MockObject';
+    }
 }

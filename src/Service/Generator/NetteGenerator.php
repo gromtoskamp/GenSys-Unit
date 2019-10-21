@@ -2,9 +2,12 @@
 
 namespace GenSys\Unit\Service\Generator;
 
+use GenSys\Unit\Model\BluePrint;
+use GenSys\Unit\Model\BluePrint\TestMethod;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
+use function Sodium\crypto_box_publickey_from_secretkey;
 use function str_replace;
 
 use GenSys\Unit\Factory\MockDependencyFactory;
@@ -17,8 +20,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class NetteGenerator implements GeneratorStrategy
 {
-    const TEST_FOLDER_PATH = __DIR__. '/../../../tests/unit/';
-    const METHOD_SETUP = 'setUp';
+    const TEST_FOLDER_PATH = __DIR__ . '/../../../tests/unit/';
     const EXTEND_TESTCASE = 'PHPUnit\Framework\TestCase';
 
     /** @var MockDependencyFactory */
@@ -41,49 +43,29 @@ class NetteGenerator implements GeneratorStrategy
      */
     public function createTest(string $originalClass)
     {
-        $namespaceArray = explode('\\', $originalClass);
-        $testClassName = array_pop($namespaceArray) . 'Test';
-        $namespace = implode('\\', $namespaceArray);
-
-        $phpNamespace = new PhpNamespace($namespace);
-        $phpNamespace->addUse(TestCase::class);
-        $phpNamespace->addUse(MockObject::class);
-        $classType = $phpNamespace->addClass($testClassName);
-        $classType->addExtend(TestCase::class);
+        $bluePrint = new BluePrint($originalClass);
+        $bluePrint->addUse(TestCase::class);
+        $bluePrint->addUse(MockObject::class);
+        $bluePrint->setExtend(TestCase::class);
 
         $reflectionClass = new ReflectionClass($originalClass);
+        $mockDependencies = $this->mockDependencyFactory->createFromReflectionClass($reflectionClass);
+        $bluePrint->addMockDependencies($mockDependencies);
 
-        $this->addSetupMethod($classType, $reflectionClass);
-        $this->addTestMethods($classType, $reflectionClass);
+        $this->addTestMethods($reflectionClass, $bluePrint);
 
-        $this->addMockDependenciesBody($classType, $phpNamespace);
-
-        $this->write($phpNamespace);
+        $this->write($bluePrint->getPhpNamespace());
     }
 
-    private function addTestMethods(ClassType $classType, ReflectionClass $reflectionClass)
+    private function addTestMethods(ReflectionClass $reflectionClass, BluePrint $bluePrint)
     {
         foreach($reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $reflectionMethod) {
             if (strpos($reflectionMethod->getName(), '__') !== false) {
                 continue;
             }
 
-            $this->addTestMethod($classType, $reflectionMethod);
-        }
-    }
-
-    public function addTestMethod(ClassType $classType, ReflectionMethod $reflectionMethod)
-    {
-        $testName = 'test' . ucfirst($reflectionMethod->getName());
-        $testMethod =$classType->addMethod($testName);
-
-        foreach ($reflectionMethod->getParameters() as $parameter) {
-            $parameterClass = $parameter->getClass();
-            if (null !== $parameterClass) {
-                $mockDependency = $this->mockDependencyFactory->createFromReflectionParameter($parameter);
-                $this->mockDependencies[$parameterClass->getName()] = $mockDependency;
-                $testMethod->addBody($mockDependency->getVariableName() . ' = clone ' . $mockDependency->getPropertyCall() . ';');
-            }
+            $testMethod = new TestMethod($reflectionMethod, $bluePrint);
+            $bluePrint->addTestMethod($testMethod);
         }
     }
 
@@ -91,7 +73,6 @@ class NetteGenerator implements GeneratorStrategy
     {
         foreach ($this->mockDependencies as $mockDependency) {
             $dependencyProperty = $classType->addProperty($mockDependency->getPropertyName());
-            $dependencyProperty->addComment('@var ' . $mockDependency->getClassName() . '|MockObject');
             $classType->getMethod(self::METHOD_SETUP)->addBody($mockDependency->getBody());
             $phpNamespace->addUse($mockDependency->getFullyQualifiedClassName());
         }
@@ -122,7 +103,7 @@ class NetteGenerator implements GeneratorStrategy
      */
     private function addSetupMethod(ClassType $classType, ReflectionClass $reflectionClass)
     {
-        $setUpMethod = $classType->addMethod(self::METHOD_SETUP);
+        $classType->addMethod(self::METHOD_SETUP);
         $this->addMockDependenciesFromClass($reflectionClass);
     }
 
@@ -133,8 +114,6 @@ class NetteGenerator implements GeneratorStrategy
      */
     private function addMockDependenciesFromClass(ReflectionClass $reflectionClass)
     {
-        foreach ($reflectionClass->getConstructor()->getParameters() as $parameter) {
-            $this->mockDependencies[] = $this->mockDependencyFactory->createFromReflectionParameter($parameter);
-        }
+
     }
 }

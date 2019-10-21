@@ -18,6 +18,12 @@ class DummyServiceWithDependencyTest extends TestCase
 	}
 
 
+	public function testAddToDummyValueProperty()
+	{
+		$dummyObject = clone $this->dummyObject;
+	}
+
+
 	public function testAddToDummyValue()
 	{
 		$dummyObject = clone $this->dummyObject;
