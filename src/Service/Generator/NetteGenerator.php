@@ -26,9 +26,6 @@ class NetteGenerator implements GeneratorStrategy
     /** @var MockDependencyFactory */
     private $mockDependencyFactory;
 
-    /** @var MockDependency[] */
-    private $mockDependencies = [];
-
     /**
      * NetteGenerator constructor.
      */
