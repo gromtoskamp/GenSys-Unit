@@ -17,7 +17,7 @@ class DummyObject
         return $this->dummyValue;
     }
 
-    public function setDummyValue(int $dummyValue): self
+    public function setDummyValue(int $dummyValue): void
     {
         $this->dummyValue = $dummyValue;
     }

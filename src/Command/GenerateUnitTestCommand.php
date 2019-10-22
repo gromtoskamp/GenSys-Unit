@@ -19,11 +19,19 @@ class GenerateUnitTestCommand extends Command
         $this->addArgument('className', InputArgument::REQUIRED, 'Name of the class to generate a Unit Test for.');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|void|null
+     * @throws \ReflectionException
+     *
+     * TODO: change input of command to accept a Relative Path to a file.
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $className = $input->getArgument('className');
+        //TODO: Add DI.
         $generateUnitTestService = new GenerateUnitTestService(new NetteGenerator());
         $generateUnitTestService->generateUnitTest($className);
-        $output->writeln('test');
     }
 }

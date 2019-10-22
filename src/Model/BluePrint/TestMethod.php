@@ -9,6 +9,7 @@ use ReflectionMethod;
 
 class TestMethod
 {
+    /** @var string regex pattern to find propertyName in $this->propertyName->methodCall() */
     const REGEX = '/\$this->([a-zA-Z0-9_]*)->[a-zA-Z0-9_]*\(/';
 
     /** @var Method */
@@ -26,7 +27,6 @@ class TestMethod
     public function __construct(ReflectionMethod $reflectionMethod, BluePrint $bluePrint)
     {
         $testName = 'test' . ucfirst($reflectionMethod->getName());
-
         $this->netteMethod = new Method($testName);
         $this->setName($testName);
 
