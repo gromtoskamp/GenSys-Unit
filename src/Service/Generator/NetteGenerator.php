@@ -2,17 +2,14 @@
 
 namespace GenSys\Unit\Service\Generator;
 
+use function str_replace;
+
 use GenSys\Unit\Model\BluePrint;
 use GenSys\Unit\Model\BluePrint\TestMethod;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
-use function Sodium\crypto_box_publickey_from_secretkey;
-use function str_replace;
-
 use GenSys\Unit\Factory\MockDependencyFactory;
-use GenSys\Unit\Model\MockDependency;
-use Nette\PhpGenerator\ClassType;
 use ReflectionClass;
 use ReflectionException;
 use Nette\PhpGenerator\PhpNamespace;
