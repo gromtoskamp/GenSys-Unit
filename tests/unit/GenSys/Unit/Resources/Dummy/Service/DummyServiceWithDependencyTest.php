@@ -14,7 +14,7 @@ class DummyServiceWithDependencyTest extends TestCase
 
 	public function setUp()
 	{
-		$this->dummyObject = $this->getMockBuilder('GenSys\Unit\Resources\Dummy\Object\DummyObject')->disableOriginalConstructor()->getMock();
+		$this->dummyObject = $this->getMockBuilder(DummyObject::class)->disableOriginalConstructor()->getMock();
 	}
 
 
