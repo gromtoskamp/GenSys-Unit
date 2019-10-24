@@ -42,7 +42,7 @@ class MockDependency
 
     public function getBody()
     {
-        return '$this->' . $this->getPropertyName() . ' = $this->getMockBuilder(\'' . $this->parameter->getClass()->getName() . '\')->disableOriginalConstructor()->getMock();';
+        return '$this->' . $this->getPropertyName() . ' = $this->getMockBuilder(' . $this->parameter->getClass()->getShortName() . '::class)->disableOriginalConstructor()->getMock();';
     }
 
     public function getDocBlock()
